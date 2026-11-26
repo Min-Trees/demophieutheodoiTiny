@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Demo phiếu theo dõi Tiny STEAM theo tháng tuổi</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--mut:#6b7280;--card:#f8fafc;--bd:#e2e8f0;--g:#15803d;--y:#b45309;--r:#b91c1c;--gb:#dcfce7;--yb:#fef3c7;--rb:#fee2e2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f172a;--fg:#e5e7eb;--mut:#94a3b8;--card:#1e293b;--bd:#334155;--g:#86efac;--y:#fcd34d;--r:#fca5a5;--gb:#14532d;--yb:#78350f;--rb:#7f1d1d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f172a;--fg:#e5e7eb;--mut:#94a3b8;--card:#1e293b;--bd:#334155;--g:#86efac;--y:#fcd34d;--r:#fca5a5;--gb:#14532d;--yb:#78350f;--rb:#7f1d1d}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:14px}
+.hd{background:#fff200;color:#1f2937;padding:10px 14px;border-radius:10px;font-weight:700}
+h2{font-size:16px;margin:18px 0 8px}.sub{color:var(--mut);font-size:13px;margin:8px 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:2px}
+input,select{width:100%;padding:6px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{border-bottom:1px solid var(--bd);padding:5px;text-align:left;vertical-align:top}
+th{font-size:12px;background:#fff200;color:#1f2937}
+td.gh{background:var(--bd);font-weight:700}td.sel{width:118px}.num{white-space:nowrap}
+.age{font-weight:400}
+.chip{display:inline-block;padding:0 7px;border-radius:99px;font-size:11px;font-weight:600;margin-top:2px}
+.g{background:var(--gb);color:var(--g)}.y{background:var(--yb);color:var(--y)}.r{background:var(--rb);color:var(--r)}
+.note{font-size:12px;color:var(--mut)}ul{margin:4px 0 4px 18px;padding:0}
+</style>
+</head>
+<body>
+<main>
+<div class="hd">PHIẾU THEO DÕI SỰ PHÁT TRIỂN CỦA TRẺ · TINY STEAM · bản demo đánh giá theo tháng tuổi</div>
+<p class="sub">Giữ nguyên chỉ số, thang “Luôn luôn … Không bao giờ” và 5 mốc của phiếu trường. Khác biệt: mỗi ô được đối chiếu với mức kỳ vọng theo <b>tháng tuổi thật</b> của bé, không chỉ theo “Mốc” chung của lớp. Chọn một phiếu mẫu để xem ngay.</p>
+<div class="card grid">
+ <div><label>Phiếu mẫu</label><select id="demo"></select></div>
+ <div><label>Loại phiếu</label><select id="sh"></select></div>
+ <div><label>Tên bé</label><input id="nm"></div>
+ <div><label>Ngày sinh</label><input id="dob" type="date"></div>
+ <div><label>Niên khóa (năm bắt đầu)</label><input id="yr" type="number" value="2026"></div>
+ <div><label>Cách xem kết quả</label><select id="mode"><option value="a">Theo tháng tuổi của bé</option><option value="m">Theo mốc chung của lớp (như hiện nay)</option></select></div>
+</div>
+<div class="card scroll" style="margin-top:12px"><table id="tb"></table></div>
+<h2>Tổng hợp theo từng mốc</h2>
+<div class="card scroll"><table id="sm"></table></div>
+<h2>Gợi ý điền vào phiếu</h2>
+<div class="card" id="sg"></div>
+<p class="note">Cách tính: Không bao giờ = 1 … Luôn luôn = 5. Mỗi chỉ số có hai mốc tháng tuổi (bắt đầu xuất hiện, thành thạo); mức kỳ vọng tăng đều từ 1 đến 5 giữa hai mốc. Lệch thấp hơn kỳ vọng quá 0,75 bậc: theo dõi; quá 1,75 bậc: cần hỗ trợ. “Mốc chung” là cách hiện nay: so với tuổi danh nghĩa của cột (ví dụ 28 tháng). Các mốc bắt đầu/thành thạo là đề xuất tham khảo, cần tổ chuyên môn thống nhất. Dữ liệu phiếu mẫu là giả định, công cụ chỉ hỗ trợ theo dõi, không chẩn đoán.</p>
+</main>
+<script>
+const D={"levels": ["Không bao giờ", "Hiếm khi", "Thỉnh thoảng", "Thường xuyên", "Luôn luôn"], "sheets": [{"name": "18-24 tháng", "marks": [18, 20, 22, 24, 26], "rows": [{"g": "Thể chất – Vận động", "c": "N-TC-01", "t": "Thăng bằng", "b": "Giữ được thăng bằng cơ thể khi đi theo đường thẳng (ở trên sàn) hoặc cầm đồ vật nhỏ trên hai tay và đi hết đoạn đường 1,8 - 2m", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Vận động", "c": "N-TC-02", "t": "Vận động thô", "b": "Phối hợp tay, chân, cơ thể trong bò, trườn chui qua vòng, qua vật cản", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Vận động", "c": "N-TC-03", "t": "Vận động tinh", "b": "Nhặt được các vật nhỏ bằng 2 ngón tay", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Vận động", "c": "N-TC-04", "t": "Phối hợp tay – mắt", "b": "Thực hiện phối hợp vận động tay - mắt: biết lăn - bắt bóng với cô", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Vận động", "c": "N-TC-05", "t": "Vận động thô", "b": "Ném bằng một tay lên phía trước được khoảng 1,2m; đá bóng lăn xa lên trước tối thiểu 1,5m", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Vận động", "c": "N-TC-06", "t": "Vận động tinh", "b": "Tháo lắp, lồng được 3 - 4 hộp tròn, xếp chồng được 2 - 3 khối trụ", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-07", "t": "Vệ sinh", "b": "Biết “gọi” người lớn khi có nhu cầu đi vệ sinh", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-08", "t": "Tự phục vụ", "b": "Làm được một số việc với sự giúp đỡ của người lớn (ngồi vào bàn ăn, cầm thìa xúc ăn, cầm cốc uống nước).", "d": "TC", "o": 15, "s": 24}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-09", "t": "An toàn", "b": "Biết tránh một số hành động nguy hiểm (sờ vào ổ điện, leo trèo lên bàn, ghế..) khi được nhắc nhở", "d": "TC", "o": 15, "s": 24}, {"g": "Nhận thức", "c": "N-NT-10", "t": "Bản thân & người thân", "b": "Chỉ hoặc nói được tên của mình, những người gần gũi khi được hỏi.", "d": "NT", "o": 15, "s": 24}, {"g": "Nhận thức", "c": "N-NT-11", "t": "Cơ thể", "b": "Chỉ vào hoặc nói tên một vài bộ phận cơ thể của người khi được hỏi.", "d": "NT", "o": 15, "s": 24}, {"g": "Nhận thức", "c": "N-NT-12", "t": "Đồ vật – Con vật", "b": "Chỉ/lấy/nói tên đồ dùng, đồ chơi, hoa quả, con vật quen thuộc theo yêu cầu của người lớn", "d": "NT", "o": 15, "s": 24}, {"g": "Nhận thức", "c": "N-NT-13", "t": "Màu sắc", "b": "Chỉ hoặc lấy được đồ chơi có màu đỏ hoặc xanh theo yêu cầu hoặc gợi ý của người lớn", "d": "NT", "o": 15, "s": 22}, {"g": "Ngôn ngữ", "c": "N-NN-14", "t": "Nghe hiểu", "b": "Thực hiện được các yêu cầu đơn giản: đi đến đây; đi rửa tay…", "d": "NN", "o": 15, "s": 24}, {"g": "Ngôn ngữ", "c": "N-NN-15", "t": "Nghe hiểu", "b": "Hiểu được từ “không”: dừng hành động khi nghe “Không được lấy!”; “Không được sờ”,…", "d": "NN", "o": 15, "s": 22}, {"g": "Ngôn ngữ", "c": "N-NN-16", "t": "Nói", "b": "Nhắc lại được từ ngữ và câu ngắn: con vịt, vịt bơi, bé đi chơi, …", "d": "NN", "o": 15, "s": 24}, {"g": "Ngôn ngữ", "c": "N-NN-17", "t": "Nói", "b": "Trả lời được câu hỏi đơn giản: “Ai đây?”, “Con gì đây?”, “Cái gì đây?”, …", "d": "NN", "o": 15, "s": 24}, {"g": "Ngôn ngữ", "c": "N-NN-18", "t": "Thơ – truyện", "b": "Đọc tiếp tiếng cuối của câu thơ khi nghe các bài thơ quen thuộc.", "d": "NN", "o": 15, "s": 24}, {"g": "Ngôn ngữ", "c": "N-NN-19", "t": "Nói", "b": "Nói được câu đơn 2 - 3 tiếng: con đi chơi; bóng đá; mẹ đi làm; …", "d": "NN", "o": 15, "s": 24}, {"g": "Ngôn ngữ", "c": "N-NN-20", "t": "Bày tỏ nhu cầu", "b": "Chủ động nói nhu cầu, mong muốn của bản thân (con uống nước, con muốn…)", "d": "NN", "o": 15, "s": 24}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-21", "t": "Bản thân", "b": "Nhận ra bản thân trong gương, trong ảnh (chỉ vào hình ảnh của mình trong gương khi được hỏi).", "d": "XH", "o": 15, "s": 24}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-22", "t": "Giao tiếp", "b": "Biểu lộ sự thích giao tiếp bằng cử chỉ, lời nói với những người gần gũi", "d": "XH", "o": 15, "s": 24}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-23", "t": "Quy tắc", "b": "Làm theo một số yêu cầu đơn giản của người lớn.", "d": "XH", "o": 15, "s": 22}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-24", "t": "Lễ phép", "b": "Chào tạm biệt khi được nhắc nhở", "d": "XH", "o": 15, "s": 22}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-25", "t": "Bắt chước", "b": "Bắt chước được một vài hành vi xã hội (bế búp bê, cho búp bê ăn, nghe điện thoại...).", "d": "XH", "o": 15, "s": 24}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TM-26", "t": "Cảm thụ", "b": "Thích vẽ, xem tranh", "d": "XH", "o": 15, "s": 24}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TM-27", "t": "Cảm thụ", "b": "Thích nghe hát và vận động theo nhạc (dậm chân, lắc lư, vỗ tay...).", "d": "XH", "o": 15, "s": 24}]}, {"name": "25-36 tháng", "marks": [28, 30, 32, 34, 36], "rows": [{"g": "Thể chất – Vận động", "c": "N-TC-01", "t": "Thăng bằng", "b": "Giữ được thăng bằng trong vận động đi/chạy thay đổi tốc độ nhanh - chậm theo cô hoặc đi trong đường hẹp có bê vật trên tay", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Vận động", "c": "N-TC-02", "t": "Vận động thô", "b": "Thể hiện sức mạnh của cơ bắp trong vận động ném, đá bóng: ném xa lên phía trước bằng một tay (tối thiểu 1,5m)", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Vận động", "c": "N-TC-03", "t": "Phối hợp tay – mắt", "b": "Thực hiện phối hợp vận động tay - mắt: tung - bắt bóng với cô ở khoảng cách 1m; ném vào đích xa 1 - 1,2m.", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Vận động", "c": "N-TC-04", "t": "Vận động thô", "b": "Phối hợp tay, chân, cơ thể trong khi bò để giữ được vật đặt trên lưng", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Vận động", "c": "N-TC-05", "t": "Vận động tinh", "b": "Phối hợp được cử động bàn tay, ngón tay và phối hợp tay - mắt trong các hoạt động: nhào đất nặn; vẽ tổ chim; xâu vòng tay…", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-06", "t": "Tự phục vụ", "b": "Làm được một số việc với sự giúp đỡ của người lớn (lấy nước uống, đi vệ sinh,...)", "d": "TC", "o": 24, "s": 32}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-07", "t": "An toàn", "b": "Biết tránh một số vật dụng, nơi nguy hiểm (kéo to, ổ cắm, đồ vật ở trên cao...) khi được nhắc nhở.", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-08", "t": "Sức khỏe", "b": "Chấp nhận: đội mũ khi ra nắng; đi giày dép; mặc quần áo ấm khi trời lạnh", "d": "TC", "o": 24, "s": 36}, {"g": "Thể chất – Dinh dưỡng & Sức khỏe", "c": "N-TC-09", "t": "An toàn", "b": "Biết và tránh một số hành động nguy hiểm khi được nhắc nhở", "d": "TC", "o": 24, "s": 36}, {"g": "Nhận thức", "c": "N-NT-10", "t": "Bản thân & người thân", "b": "Nói được tên của bản thân và những người gần gũi khi được hỏi", "d": "NT", "o": 24, "s": 34}, {"g": "Nhận thức", "c": "N-NT-11", "t": "Cơ thể", "b": "Nói được tên và chức năng của một số bộ phận cơ thể khi được hỏi", "d": "NT", "o": 24, "s": 36}, {"g": "Nhận thức", "c": "N-NT-12", "t": "Màu sắc", "b": "Chỉ/nói tên hoặc lấy hoặc cất đúng đồ chơi màu đỏ/vàng/ xanh theo yêu cầu", "d": "NT", "o": 24, "s": 34}, {"g": "Nhận thức", "c": "N-NT-13", "t": "Đồ vật – Con vật", "b": "Nói được tên và một vài đặc điểm nổi bật của các đồ vật, hoa quả, con vật quen thuộc", "d": "NT", "o": 24, "s": 36}, {"g": "Nhận thức", "c": "N-NT-14", "t": "Kích thước", "b": "Chỉ hoặc lấy hoặc cất đúng đồ chơi có kích thước to/nhỏ theo yêu cầu", "d": "NT", "o": 24, "s": 32}, {"g": "Ngôn ngữ", "c": "N-NN-15", "t": "Nói", "b": "Trả lời các câu hỏi: “Ai đây?”, “Cái gì đây?”, “… làm gì?”, “..... thế nào?” (ví dụ: con gà gáy thế nào?”, ...)", "d": "NN", "o": 24, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-16", "t": "Phát âm", "b": "Phát âm rõ tiếng", "d": "NN", "o": 24, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-17", "t": "Nói", "b": "Nói được câu đơn, câu có 5 - 7 tiếng, có các từ thông dụng chỉ sự vật, hoạt động, đặc điểm quen thuộc", "d": "NN", "o": 24, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-18", "t": "Nghe hiểu", "b": "Thực hiện được nhiệm vụ gồm 2 - 3 hành động. Ví dụ: \"Con cất đồ chơi lên kệ rồi đi rửa tay\"", "d": "NN", "o": 26, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-19", "t": "Nghe hiểu", "b": "Hiểu nội dung truyện ngắn đơn giản: trả lời được các câu hỏi về tên truyện, tên và hành động của các nhân vật", "d": "NN", "o": 26, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-20", "t": "Thơ – đồng dao", "b": "Đọc được bài thơ, ca dao, đồng dao với sự giúp đỡ của cô giáo", "d": "NN", "o": 24, "s": 36}, {"g": "Ngôn ngữ", "c": "N-NN-21", "t": "Giao tiếp", "b": "Sử dụng lời nói với các mục đích khác nhau: - Chào hỏi, trò chuyện. - Bày tỏ nhu cầu của bản thân. - Hỏi về các vấn đề quan tâm như: con gì đây? cái gì đây?, …", "d": "NN", "o": 24, "s": 36}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-22", "t": "Bản thân", "b": "Nói được một vài thông tin về mình (tên, tuổi)", "d": "XH", "o": 26, "s": 36}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-23", "t": "Giao tiếp", "b": "Biểu lộ sự thích giao tiếp với người khác bằng cử chỉ, lời nói", "d": "XH", "o": 24, "s": 32}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-24", "t": "Cảm xúc", "b": "Biểu lộ cảm xúc: vui, buồn, sợ hãi qua nét mặt, cử chỉ", "d": "XH", "o": 24, "s": 34}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-25", "t": "Yêu thương", "b": "Biểu lộ sự thân thiện với một số con vật quen thuộc/gần gũi: bắt chước tiếng kêu, gọi", "d": "XH", "o": 24, "s": 36}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-26", "t": "Cảm xúc", "b": "Nhận biết được trạng thái cảm xúc vui, buồn, sợ hãi", "d": "XH", "o": 24, "s": 36}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-27", "t": "Lễ phép", "b": "Biết chào, tạm biệt, cảm ơn, ạ, vâng ạ", "d": "XH", "o": 24, "s": 32}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TXH-28", "t": "Hành vi xã hội", "b": "Biết thể hiện một số hành vi xã hội đơn giản qua trò chơi giả bộ (trò chơi bế em, khuấy bột cho em bé, nghe điện thoại...)", "d": "XH", "o": 24, "s": 34}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TM-29", "t": "Cảm thụ", "b": "Biết hát và vận động đơn giản theo một vài bài hát/bản nhạc quen thuộc", "d": "XH", "o": 24, "s": 36}, {"g": "Tình cảm – Kỹ năng xã hội & Thẩm mỹ", "c": "N-TM-30", "t": "Sáng tạo", "b": "Thích tô màu, vẽ, nặn, xé, xếp hình, xem tranh (cầm bút di màu, vẽ nguệch ngoạc)", "d": "XH", "o": 24, "s": 36}]}]},$=id=>document.getElementById(id);
+const LV=D.levels,CK=[9,11,1,3,5],ST=[["Phù hợp","g"],["Theo dõi","y"],["Cần hỗ trợ","r"]];
+const ex=(m,o,s)=>1+4*Math.min(1,Math.max(0,(m-o)/(s-o)));
+const st=g=>g>=-0.75?0:g>=-1.75?1:2;
+const chip=k=>`<span class="chip ${ST[k][1]}">${ST[k][0]}</span>`;
+const f=x=>x.toFixed(1).replace(".",",");
+let SH=D.sheets[0];
+$("sh").innerHTML=D.sheets.map((s,i)=>`<option value="${i}">${s.name}</option>`).join("");
+const dates=()=>{const y=+$("yr").value||2026;return CK.map(m=>new Date(m>=9?y:y+1,m-1,15))};
+function ageAt(d){const b=$("dob").value;if(!b)return null;const p=b.split("-").map(Number);let m=(d.getFullYear()-p[0])*12+d.getMonth()-(p[1]-1);if(d.getDate()<p[2])m--;return m}
+function build(){
+ SH=D.sheets[+$("sh").value];
+ let h="<tr><th>Mã</th><th>Mục tiêu · hành vi quan sát</th>"+CK.map((m,j)=>`<th>Tháng ${m}<br>Mốc ${SH.marks[j]} th<br><span class="age" id="ag${j}"></span></th>`).join("")+"</tr>",g="";
+ SH.rows.forEach((r,i)=>{
+  if(r.g!==g){g=r.g;h+=`<tr><td class="gh" colspan="7">${g}</td></tr>`}
+  h+=`<tr><td class="num"><b>${r.c}</b></td><td><b>${r.t}</b> · ${r.b}</td>`+CK.map((m,j)=>`<td class="sel"><select id="c${i}_${j}" onchange="calc()"><option value="">—</option>${LV.map((l,k)=>`<option value="${k+1}">${l}</option>`).join("")}</select><div id="k${i}_${j}"></div></td>`).join("")+"</tr>";
+ });
+ $("tb").innerHTML=h;
+}
+function calc(){
+ const ag=dates().map(ageAt),mode=$("mode").value;
+ const tot=CK.map(()=>({n:0,sum:0,a:[0,0,0],m:[0,0,0]})),det=CK.map(()=>[]);
+ CK.forEach((_,j)=>{$("ag"+j).textContent=ag[j]===null?"":"Bé: "+ag[j]+" th"});
+ SH.rows.forEach((r,i)=>CK.forEach((_,j)=>{
+  const v=+$("c"+i+"_"+j).value,el=$("k"+i+"_"+j);
+  if(!v||ag[j]===null){el.innerHTML="";return}
+  const ka=st(v-ex(ag[j],r.o,r.s)),km=st(v-ex(SH.marks[j],r.o,r.s)),t=tot[j];
+  el.innerHTML=chip(mode==="a"?ka:km);
+  t.n++;t.sum+=v;t.a[ka]++;t.m[km]++;det[j].push({r,ka});
+ }));
+ $("sm").innerHTML="<tr><th>Mốc</th><th>Tuổi bé (th)</th><th>Số chỉ số đã chấm</th><th>Điểm TB (1–5)</th><th>Mốc chung: cần hỗ trợ · theo dõi</th><th>Theo tháng tuổi: cần hỗ trợ · theo dõi</th></tr>"+
+  tot.map((t,j)=>t.n?`<tr><td>Tháng ${CK[j]} · mốc ${SH.marks[j]}</td><td>${ag[j]}</td><td>${t.n}</td><td>${f(t.sum/t.n)}</td><td>${t.m[2]} · ${t.m[1]}</td><td><b>${t.a[2]} · ${t.a[1]}</b></td></tr>`:"").join("");
+ let L=-1;tot.forEach((t,j)=>{if(t.n)L=j});
+ if(L<0){$("sg").textContent="Nhập ngày sinh và chấm ít nhất một ô (hoặc chọn phiếu mẫu) để xem gợi ý.";return}
+ const F=tot.findIndex(t=>t.n),a=tot[F].sum/tot[F].n,b=tot[L].sum/tot[L].n;
+ const need=det[L].filter(x=>x.ka===2),wat=det[L].filter(x=>x.ka===1);
+ const li=z=>z.length?"<ul>"+z.map(x=>`<li><b>${x.r.c}</b> ${x.r.t}: ${x.r.b}</li>`).join("")+"</ul>":`<div class="note">Không có.</div>`;
+ $("sg").innerHTML=`<b>Nhận xét chung (gợi ý):</b> ${$("nm").value||"Bé"} ${ag[L]} tháng tuổi tại mốc tháng ${CK[L]}. `+(L>F?`Điểm trung bình ${a<b?"tăng":"giảm"} từ ${f(a)} lên ${f(b)} qua các mốc. `:"")+(need.length?`${need.length} chỉ số cần hỗ trợ, ${wat.length} chỉ số cần theo dõi.`:wat.length?`Phát triển phù hợp tháng tuổi, ${wat.length} chỉ số cần theo dõi.`:"Phát triển phù hợp tháng tuổi ở các chỉ số đã chấm.")+`<p><b>Chỉ số cần hỗ trợ trong năm học tới:</b></p>${li(need)}<p><b>Cần theo dõi thêm:</b></p>${li(wat)}`;
+}
+const DM=[["Bé Na · 25 tháng (tháng 9) · điển hình",1,25,{}],["Bé Bin · 31 tháng (tháng 9) · điển hình",1,31,{}],["Bé Su · 28 tháng · Ngôn ngữ thấp rõ, kéo dài",1,28,{NN:[-2,-2,-2,-2,-2]}],["Bé Mít · 27 tháng · Ngôn ngữ thấp rồi tiến bộ",1,27,{NN:[-2,-2,-1.5,-1,-0.5]}],["Bé Gạo · 19 tháng (phiếu 18–24) · điển hình",0,19,{}]];
+$("demo").innerHTML="<option value=\"\">Chọn phiếu mẫu…</option>"+DM.map((d,i)=>`<option value="${i}">${d[0]}</option>`).join("");
+$("demo").onchange=function(){
+ if(this.value==="")return;
+ const d=DM[+this.value],y=+$("yr").value||2026;
+ $("sh").value=d[1];build();
+ const b=new Date(y,8-d[2],15);
+ $("dob").value=b.getFullYear()+"-"+String(b.getMonth()+1).padStart(2,"0")+"-15";
+ $("nm").value=d[0].split(" · ")[0];
+ const ag=dates().map(ageAt);
+ SH.rows.forEach((r,i)=>CK.forEach((_,j)=>{const dl=(d[3][r.d]||[])[j]||0;$("c"+i+"_"+j).value=Math.min(5,Math.max(1,Math.round(ex(ag[j],r.o,r.s)+dl)))}));
+ calc();
+};
+$("sh").onchange=()=>{build();calc()};
+$("dob").onchange=$("yr").onchange=$("mode").onchange=calc;
+build();calc();
+</script>
+</body>
+</html>
